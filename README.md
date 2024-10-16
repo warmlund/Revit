@@ -2,8 +2,13 @@
 
 
 <!-- ABOUT THE PROJECT -->
-## About The Project
+## About
+This repository contains python and Dynamo scripts for Revit.
 
+| Name | Description | Dynamo version | Latest Update |
+| ------------- | ------------- | ------------- | ------------- |
+| Remove Revit Family Backups  | Removes all revit family backup files from a directory path  | 2.12.1.8411  | 20241016 |
+| Update Revit Families to 2022  | Upgrades revit families to 2022 from a directory path  | 2.12.1.8411  | 20241016 |
 
 
 
