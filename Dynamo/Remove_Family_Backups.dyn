@@ -1,0 +1,287 @@
+{
+  "Uuid": "cb1241a5-6937-477b-be3d-623244d5c319",
+  "IsCustomNode": false,
+  "Description": "",
+  "Name": "Remove_Family_Backups",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [
+    {
+      "Id": "8f5ac8d331164b7d8a1c6112939b04e6",
+      "Name": "Directory Path",
+      "Type": "string",
+      "Value": "",
+      "Description": "Allows you to select a directory on the system to get its path",
+      "SelectedIndex": 0
+    }
+  ],
+  "Outputs": [
+    {
+      "Id": "cacd27793b17483aa27176611b9ebcb9",
+      "Name": "Result",
+      "Type": "unknown",
+      "InitialValue": "",
+      "Description": "Visualize the node's output"
+    }
+  ],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "import os\r\nimport re\r\n\r\n\r\ndirectory=IN[0]\r\ndeleted=[]\r\nfailed=[]\r\n\r\ndef remove_family_backups(directory):\r\n    # Define a regex pattern to match the file structure: <model_name>.<nnnn>.rfa\r\n    pattern = r\"^.*\\.\\d{4}\\.rfa$\"\r\n\r\n    for root, dirs, files in os.walk(directory):\r\n        for file_name in files:\r\n            if re.match(pattern, file_name):\r\n                file_path = os.path.join(root, file_name)\r\n                try:\r\n                    os.remove(file_path)\r\n                    deleted.append(\"Deleted: {}\".format(file_path))\r\n                    \r\n                except Exception as e:\r\n                    failed.append(\"Failed to delete {}: {}\".format(file_path, str(e)))\r\n\r\nremove_family_backups(directory)\r\n\r\nOUT = deleted,failed",
+      "Engine": "CPython3",
+      "VariableInputPorts": true,
+      "Id": "9d73d13685234323be22c3cca7357196",
+      "Inputs": [
+        {
+          "Id": "845f5ea43a16409487baca9e97435212",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "a964693006414b26b2ce49839bca3e87",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded Python script."
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Input.Directory, CoreNodeModels",
+      "HintPath": "",
+      "InputValue": "",
+      "NodeType": "ExtensionNode",
+      "Id": "8f5ac8d331164b7d8a1c6112939b04e6",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "8bdc4ed2a1034b03a53c8ed3170d1260",
+          "Name": "",
+          "Description": "Directory path",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Allows you to select a directory on the system to get its path"
+    },
+    {
+      "ConcreteType": "CoreNodeModels.Watch, CoreNodeModels",
+      "NodeType": "ExtensionNode",
+      "Id": "cacd27793b17483aa27176611b9ebcb9",
+      "Inputs": [
+        {
+          "Id": "6a8db5f9e90944bf99e2ca43e62a664b",
+          "Name": "",
+          "Description": "Node to show output from",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "bfe08326a7ee4909b168f73e18834d35",
+          "Name": "",
+          "Description": "Node output",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Visualize the node's output"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "a964693006414b26b2ce49839bca3e87",
+      "End": "6a8db5f9e90944bf99e2ca43e62a664b",
+      "Id": "ab73cafbd7884ad5a93e32a34bd39b66"
+    },
+    {
+      "Start": "8bdc4ed2a1034b03a53c8ed3170d1260",
+      "End": "845f5ea43a16409487baca9e97435212",
+      "Id": "f4451c5e396149c3af26b130baea543c"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Thumbnail": "",
+  "GraphDocumentationURL": null,
+  "ExtensionWorkspaceData": [
+    {
+      "ExtensionGuid": "28992e1d-abb9-417f-8b1b-05e053bee670",
+      "Name": "Properties",
+      "Version": "2.12",
+      "Data": {}
+    },
+    {
+      "ExtensionGuid": "DFBD9CC0-DB40-457A-939E-8C8555555A9D",
+      "Name": "Generative Design",
+      "Version": "1.10",
+      "Data": {}
+    }
+  ],
+  "Author": "",
+  "Linting": {
+    "activeLinter": "None",
+    "activeLinterId": "7b75fb44-43fd-4631-a878-29f4d5d8399a",
+    "warningCount": 0,
+    "errorCount": 0
+  },
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": true,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.12.1.8246",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Background Preview",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "ShowGeometry": true,
+        "Name": "Python Script",
+        "Id": "9d73d13685234323be22c3cca7357196",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 847.32778863415012,
+        "Y": 159.92027819684677
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Directory Path",
+        "Id": "8f5ac8d331164b7d8a1c6112939b04e6",
+        "IsSetAsInput": true,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 550.53319842010535,
+        "Y": 158.99949399458029
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Result",
+        "Id": "cacd27793b17483aa27176611b9ebcb9",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": true,
+        "Excluded": false,
+        "X": 1046.94654957772,
+        "Y": 161.942407589233
+      }
+    ],
+    "Annotations": [
+      {
+        "Id": "0706a7c6f4144fec9890e6ec44cbdc51",
+        "Title": "USER INPUT",
+        "Nodes": [
+          "8f5ac8d331164b7d8a1c6112939b04e6"
+        ],
+        "Left": 540.53319842010535,
+        "Top": 105.66616066124695,
+        "Width": 236.66666666666663,
+        "Height": 149.00000000000003,
+        "FontSize": 36.0,
+        "InitialTop": 158.99949399458029,
+        "InitialHeight": 145.0,
+        "TextblockHeight": 43.333333333333336,
+        "Background": "#FFFFB8D8"
+      },
+      {
+        "Id": "d0a8582f1ff04531b8fbcb7459f3108e",
+        "Title": "PYTHON",
+        "Nodes": [
+          "9d73d13685234323be22c3cca7357196"
+        ],
+        "Left": 837.32778863415012,
+        "Top": 106.58694486351347,
+        "Width": 149.23666666666668,
+        "Height": 156.33333333333331,
+        "FontSize": 36.0,
+        "InitialTop": 159.92027819684677,
+        "InitialHeight": 145.0,
+        "TextblockHeight": 43.3333333333333,
+        "Background": "#FFB9F9E1"
+      },
+      {
+        "Id": "42f66e44a408419eba8d27d492c3a8f5",
+        "Title": "REMOVE REVIT FAMILY BACKUPS",
+        "Nodes": [
+          "f23093485713468892bdc976c9f0a9f5"
+        ],
+        "Left": 133.3678023382443,
+        "Top": 105.38595884645345,
+        "Width": 369.33333333333331,
+        "Height": 304.33333333333331,
+        "FontSize": 36.0,
+        "InitialTop": 202.05262551312012,
+        "InitialHeight": 145.0,
+        "TextblockHeight": 86.666666666666671,
+        "Background": "#FFA4E1FF"
+      },
+      {
+        "Id": "d4e049174f55434ba9c6a15fa0adf476",
+        "Title": "OUTPUT",
+        "Nodes": [
+          "cacd27793b17483aa27176611b9ebcb9"
+        ],
+        "Left": 1036.94654957772,
+        "Top": 108.609074255899,
+        "Width": 230.0,
+        "Height": 331.0,
+        "FontSize": 36.0,
+        "InitialTop": 161.942407589233,
+        "InitialHeight": 145.0,
+        "TextblockHeight": 43.3333333333333,
+        "Background": "#FFFFC999"
+      },
+      {
+        "Id": "f23093485713468892bdc976c9f0a9f5",
+        "Title": "DYNAMO VERSION: 2.12.1.8246                                                 \nVERSION:  1.0\n\nCREATED BY: Emelie Wärmlund\n\nDATE CREATED: 20242016\nLAST MODIFIED: \n\nDESCRIPTION:\r\nRemoves all family backups of a directory\n\n",
+        "Nodes": [],
+        "Left": 143.3678023382443,
+        "Top": 202.05262551312012,
+        "Width": 0.0,
+        "Height": 0.0,
+        "FontSize": 36.0,
+        "InitialTop": 0.0,
+        "InitialHeight": 0.0,
+        "TextblockHeight": 0.0,
+        "Background": "#FFC1D676"
+      }
+    ],
+    "X": -63.848884016999477,
+    "Y": 36.364358797869329,
+    "Zoom": 1.0857035604471865
+  }
+}
