@@ -14,7 +14,8 @@ This repository contains python and Dynamo scripts for Revit.
 
 ### Built With
 
-![GitHub top language](https://img.shields.io/github/languages/top/warmlund/Revit)
+![GitHub top language](https://img.shields.io/github/languages/top/warmlund/Revit) 
+![GitHub language count](https://img.shields.io/github/languages/count/warmlund/Revit)
 
 
 
