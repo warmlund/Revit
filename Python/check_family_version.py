@@ -29,8 +29,17 @@ def check_directory_for_revit_versions(directory_path):
                 version = get_revit_version_from_rfa(file_path)
                 print(f"File: {file_name}, Version: {version}")
 
-# Directory containing the Revit families (.rfa files)
-directory_path = "directory/path/here"
+def get_input():
+    print("Please enter directory: ")
+    directory = input()
+    return directory
 
-# Run the check
-check_directory_for_revit_versions(directory_path)
+directory=""
+
+while(os.path.exists(directory)==False):
+    directory=get_input()
+    if os.path.exists(str(directory)):
+        check_directory_for_revit_versions(directory)
+
+    else:
+        print("Directory is not valid")

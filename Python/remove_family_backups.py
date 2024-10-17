@@ -20,6 +20,17 @@ def remove_family_backups(directory):
                     print(f"Error deleting {file_path}: {e}")
     print(f"Total backups deleted: {number_of_families_removed}")
 
-# Usage example
-directory = "directory/path/here"
-remove_family_backups(directory)
+def get_input():
+    print("Please enter directory: ")
+    directory = input()
+    return directory
+
+directory=""
+
+while(os.path.exists(directory)==False):
+    directory=get_input()
+    if os.path.exists(str(directory)):
+        remove_family_backups(directory)
+
+    else:
+        print("Directory is not valid")
