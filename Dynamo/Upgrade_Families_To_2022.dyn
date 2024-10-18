@@ -11,7 +11,7 @@
       "Id": "3aedbafbda414bb69cfccb5ec904d716",
       "Name": "Select Folder",
       "Type": "string",
-      "Value": "C:\\Users\\EMWA\\Bjerking AB\\Moln.EH-LAR - Dokument\\04 Projektering\\03 Revit\\Familjer\\Lighting fixtures",
+      "Value": "",
       "Description": "Allows you to select a directory on the system to get its path",
       "SelectedIndex": 0
     }
@@ -60,8 +60,8 @@
     },
     {
       "ConcreteType": "CoreNodeModels.Input.Directory, CoreNodeModels",
-      "HintPath": "C:\\Users\\EMWA\\Bjerking AB\\Moln.EH-LAR - Dokument\\04 Projektering\\03 Revit\\Familjer\\Lighting fixtures",
-      "InputValue": "C:\\Users\\EMWA\\Bjerking AB\\Moln.EH-LAR - Dokument\\04 Projektering\\03 Revit\\Familjer\\Lighting fixtures",
+      "HintPath": "",
+      "InputValue": "",
       "NodeType": "ExtensionNode",
       "Id": "3aedbafbda414bb69cfccb5ec904d716",
       "Inputs": [],
