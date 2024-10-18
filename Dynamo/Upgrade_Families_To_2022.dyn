@@ -29,7 +29,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "import os\r\nimport re\r\n\r\n# Directory containing the Revit families (.rfa files)\r\ndirectory_path = IN[0]\r\n\r\nold_family_paths=[]\r\nversions=[]\r\nfailed=[]\r\n# Function to extract and check Revit version from a Revit family file\r\ndef get_revit_version_from_rfa(file_path):\r\n    try:\r\n        # Read the .rfa file as binary\r\n        with open(file_path, 'rb') as file:\r\n            content = file.read()\r\n\r\n            # Decode to a string for XML parsing (ignoring errors)\r\n            content_str = content.decode('utf-8', errors='ignore')\r\n\r\n            # Use regex to search for the <A:product-version> tag\r\n            match = re.search(r'<A:product-version>(.*?)</A:product-version>', content_str)\r\n            if match:\r\n                return match.group(1)  # Return the version number found\r\n            else:\r\n                return null\r\n    except Exception as e:\r\n        return failed.append(\"Error reading {}: {}\".format(file_path, str(e)))\r\n\r\n# Function to loop through a directory and check all .rfa files\r\ndef check_directory_for_revit_versions(directory_path):\r\n    for root_dir, dirs, files in os.walk(directory_path):\r\n        for file_name in files:\r\n            if file_name.endswith('.rfa'):\r\n                file_path = os.path.join(root_dir, file_name)\r\n                version = get_revit_version_from_rfa(file_path)\r\n                if(version):\r\n                    if(int(version)<2022):\r\n                        old_family_paths.append(file_path)\r\n                    else:\r\n                        continue\r\n                else:\r\n                    continue\r\n                \r\n# Run the check\r\ncheck_directory_for_revit_versions(directory_path)\r\n\r\nOUT= old_family_paths",
+      "Code": "import os\r\nimport re\r\nimport clr\r\n\r\nclr.AddReference('RevitAPI')\r\nfrom Autodesk.Revit.DB import *\r\nfrom Autodesk.Revit.DB.Structure import *\r\n\r\nclr.AddReference('RevitAPIUI')\r\nfrom Autodesk.Revit.UI import *\r\n\r\nclr.AddReference('RevitNodes')\r\nimport Revit\r\nclr.ImportExtensions(Revit.GeometryConversion)\r\nclr.ImportExtensions(Revit.Elements)\r\n\r\nclr.AddReference('RevitServices')\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\n\r\n#DOC and UIDOC\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\nuidoc = DocumentManager.Instance.CurrentUIApplication.ActiveUIDocument\r\n\r\n# Directory containing the Revit families (.rfa files)\r\ndirectory_path = IN[0]\r\n\r\nold_family_paths=[]\r\nversions=[]\r\nfailed=[]\r\n\r\ndef get_revit_model_version():\r\n    return int(doc.Application.VersionNumber)\r\n    \r\n# Function to extract and check Revit version from a Revit family file\r\ndef get_revit_version_from_rfa(file_path):\r\n    try:\r\n        # Read the .rfa file as binary\r\n        with open(file_path, 'rb') as file:\r\n            content = file.read()\r\n\r\n            # Decode to a string for XML parsing (ignoring errors)\r\n            content_str = content.decode('utf-8', errors='ignore')\r\n\r\n            # Use regex to search for the <A:product-version> tag\r\n            match = re.search(r'<A:product-version>(.*?)</A:product-version>', content_str)\r\n            if match:\r\n                return match.group(1)  # Return the version number found\r\n            else:\r\n                return null\r\n    except Exception as e:\r\n        return failed.append(\"Error reading {}: {}\".format(file_path, str(e)))\r\n\r\n# Function to loop through a directory and check all .rfa files\r\ndef check_directory_for_revit_versions(directory_path):\r\n    for root_dir, dirs, files in os.walk(directory_path):\r\n        for file_name in files:\r\n            if file_name.endswith('.rfa'):\r\n                file_path = os.path.join(root_dir, file_name)\r\n                version = get_revit_version_from_rfa(file_path)\r\n                if(version):\r\n                    if(int(version)<get_revit_model_version()):\r\n                        old_family_paths.append(file_path)\r\n                    else:\r\n                        continue\r\n                else:\r\n                    continue\r\n                \r\n# Run the check\r\ncheck_directory_for_revit_versions(directory_path)\r\n\r\nOUT= old_family_paths",
       "Engine": "CPython3",
       "VariableInputPorts": true,
       "Id": "90bd089f859140b680a387e3fcf286a1",
@@ -82,7 +82,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "import clr\r\nclr.AddReference('RevitAPI')\r\nclr.AddReference('RevitServices')\r\nfrom Autodesk.Revit.DB import *\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\nimport System\r\n\r\n# Get Revit application instance\r\napp = DocumentManager.Instance.CurrentUIApplication.Application\r\nuiapp = DocumentManager.Instance.CurrentUIApplication\r\n\r\n# List of family file paths passed from Dynamo\r\nfamily_paths = IN[0]  # Input from Dynamo (a list of file paths)\r\n\r\n# Lists to track successes and failures\r\nsuccess = []\r\nfailed = []\r\n\r\n# Loop through each family file path\r\nfor path in family_paths:\r\n    try:\r\n        # Open the family document\r\n        family_doc = app.OpenDocumentFile(path)\r\n\r\n        # Save the family (upgrading it to the current Revit version)\r\n        save_options = SaveAsOptions()\r\n        save_options.OverwriteExistingFile = True\r\n        family_doc.SaveAs(path, save_options)\r\n\r\n        # Close the family document\r\n        family_doc.Close(False)\r\n\r\n        # Add to success list\r\n        success.append(\"Successfully updated: {}\".format(path))\r\n\r\n    except Exception as e:\r\n        # If there's an error, append to the failed list\r\n        failed.append(\"Failed to update: {}, Error: {}\".format(path, str(e)))\r\n\r\n# Output the results\r\nOUT = success, failed\r\n",
+      "Code": "import clr\r\nclr.AddReference('RevitAPI')\r\nclr.AddReference('RevitServices')\r\nfrom Autodesk.Revit.DB import *\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\nimport System\r\n\r\ndef get_revit_model_version():\r\n    return int(doc.Application.VersionNumber)\r\n    \r\n# Get Revit application instance\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\napp = DocumentManager.Instance.CurrentUIApplication.Application\r\nuiapp = DocumentManager.Instance.CurrentUIApplication\r\n\r\n# List of family file paths passed from Dynamo\r\nfamily_paths = IN[0]  \r\n\r\n# Lists to track successes and failures\r\nsuccess = []\r\nfailed = []\r\n\r\n# Loop through each family file path\r\nfor path in family_paths:\r\n    try:\r\n        # Open the family document\r\n        family_doc = app.OpenDocumentFile(path)\r\n\r\n        # Save the family (upgrading it to the current Revit version)\r\n        save_options = SaveAsOptions()\r\n        save_options.OverwriteExistingFile = True\r\n        family_doc.SaveAs(path, save_options)\r\n\r\n        # Close the family document\r\n        family_doc.Close(False)\r\n\r\n        # Add to success list\r\n        success.append(\"Successfully updated: {} to Revit {}\".format(path, get_revit_model_version()))\r\n\r\n    except Exception as e:\r\n        # If there's an error, append to the failed list\r\n        failed.append(\"Failed to update: {}, Error: {}\".format(path, str(e)))\r\n\r\n# Output the results\r\nOUT = success, failed\r\n",
       "Engine": "CPython3",
       "VariableInputPorts": true,
       "Id": "fe4ee6723cbf4ef88e949f285d34e27c",
@@ -213,8 +213,8 @@
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 1237.7769941562917,
-        "Y": 7.6009478774451509
+        "X": 1236.8751938794894,
+        "Y": 15.185286589750774
       },
       {
         "ShowGeometry": true,
@@ -223,8 +223,8 @@
         "IsSetAsInput": true,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 938.47067924519274,
-        "Y": 10.229098816788962
+        "X": 884.48544589285041,
+        "Y": 7.3109780950407526
       },
       {
         "ShowGeometry": true,
@@ -233,8 +233,8 @@
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 1496.2813289332382,
-        "Y": 11.716555280729722
+        "X": 1619.973334866522,
+        "Y": -4.2725261430588262
       },
       {
         "ShowGeometry": true,
@@ -243,8 +243,8 @@
         "IsSetAsInput": false,
         "IsSetAsOutput": true,
         "Excluded": false,
-        "X": 1721.9745811548357,
-        "Y": 14.467766749232311
+        "X": 1880.4417055657912,
+        "Y": -0.99688549391336778
       }
     ],
     "Annotations": [
@@ -255,14 +255,14 @@
           "90bd089f859140b680a387e3fcf286a1",
           "fe4ee6723cbf4ef88e949f285d34e27c"
         ],
-        "Left": 1227.7769941562917,
-        "Top": -45.732385455888185,
-        "Width": 402.50433477694651,
-        "Height": 160.44894073661791,
+        "Left": 1226.8751938794894,
+        "Top": -57.272526143058826,
+        "Width": 527.09814098703259,
+        "Height": 176.4578127328096,
         "FontSize": 36.0,
-        "InitialTop": 7.6009478774451509,
+        "InitialTop": -4.2725261430588262,
         "InitialHeight": 149.11560740328457,
-        "TextblockHeight": 43.333333333333336,
+        "TextblockHeight": 43.0,
         "Background": "#FFB9F9E1"
       },
       {
@@ -271,14 +271,14 @@
         "Nodes": [
           "ef1e5209563c4359a465a053247f60da"
         ],
-        "Left": 1711.9745811548357,
-        "Top": -38.865566584101025,
-        "Width": 230.0,
-        "Height": 331.00000000000006,
+        "Left": 1870.4417055657912,
+        "Top": -53.996885493913368,
+        "Width": 230.00000000000023,
+        "Height": 331.0,
         "FontSize": 36.0,
-        "InitialTop": 14.467766749232311,
+        "InitialTop": -0.99688549391336778,
         "InitialHeight": 145.0,
-        "TextblockHeight": 43.333333333333336,
+        "TextblockHeight": 43.0,
         "Background": "#FFFFC999"
       },
       {
@@ -287,38 +287,38 @@
         "Nodes": [
           "3aedbafbda414bb69cfccb5ec904d716"
         ],
-        "Left": 928.47067924519274,
-        "Top": -43.104234516544373,
-        "Width": 228.0,
-        "Height": 149.0,
+        "Left": 874.48544589285041,
+        "Top": -45.689021904959247,
+        "Width": 259.99999999999989,
+        "Height": 147.0,
         "FontSize": 36.0,
-        "InitialTop": 10.229098816788962,
+        "InitialTop": 7.3109780950407526,
         "InitialHeight": 145.0,
-        "TextblockHeight": 43.333333333333336,
+        "TextblockHeight": 43.0,
         "Background": "#FFFFB8D8"
       },
       {
         "Id": "bec45dc3bd5742ed94b00e626077d046",
-        "Title": "UPGRADE FAMILIES TO REVIT 2022",
+        "Title": "UPGRADE FAMILIES TO CURRENT REVIT VERSION",
         "Nodes": [
           "06e9073ff53641e9b28eee9f763e1c77"
         ],
-        "Left": 509.25692356636364,
-        "Top": -208.32749946544214,
-        "Width": 382.66666666666674,
-        "Height": 319.0,
+        "Left": 416.10991311261233,
+        "Top": -257.08687224268328,
+        "Width": 382.99999999999994,
+        "Height": 377.0,
         "FontSize": 36.0,
-        "InitialTop": -111.66083279877546,
+        "InitialTop": -117.08687224268328,
         "InitialHeight": 145.0,
-        "TextblockHeight": 86.666666666666671,
+        "TextblockHeight": 130.0,
         "Background": "#FFA4E1FF"
       },
       {
         "Id": "06e9073ff53641e9b28eee9f763e1c77",
-        "Title": "DYNAMO VERSION: 2.12.1.8411                                                     \nVERSION: 1.0\n\nCREATED BY: Emelie Wärmlund\n\nDATE CREATED: 2024-10-16\nLAST MODIFIED: \n\nDESCRIPTION:\r\nThis script upgrades all revit families in a directory that has a version from before Revit 2022\n\n",
+        "Title": "DYNAMO VERSION: 2.12.1.8411                                                     \nVERSION: 1.1\n\nCREATED BY: Emelie Wärmlund\n\nDATE CREATED: 2024-10-16\nLAST MODIFIED: 2024-10-18\n\nDESCRIPTION:\r\nThis script upgrades all revit families in a directory that has a version from before the open model revit version.\n\n",
         "Nodes": [],
-        "Left": 519.25692356636364,
-        "Top": -111.66083279877546,
+        "Left": 426.10991311261233,
+        "Top": -117.08687224268328,
         "Width": 0.0,
         "Height": 0.0,
         "FontSize": 36.0,
@@ -328,8 +328,8 @@
         "Background": "#FFC1D676"
       }
     ],
-    "X": -681.69991464226757,
-    "Y": 370.68007170725804,
-    "Zoom": 1.3707452094729056
+    "X": 31.1282230281262,
+    "Y": 545.11011055836286,
+    "Zoom": 0.78510673638478679
   }
 }
